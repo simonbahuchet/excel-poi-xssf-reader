@@ -1,0 +1,35 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'maven'
+apply plugin: 'groovy'
+
+version = '0.0.1-SNAPSHOT'
+group = 'org.sba.excel'
+
+jar {
+    baseName = 'poi-xssf-reader'
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+
+    compile group: 'org.codehaus.groovy', name: 'groovy', version: '2.4.11'
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
+    compile "org.apache.poi:poi:${apachepoi_version}"
+    compile "org.apache.poi:poi-ooxml:${apachepoi_version}"
+
+    testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4'
+
+}

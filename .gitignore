@@ -1,0 +1,26 @@
+# Created by .ignore support plugin (hsz.mobi)
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!.keep
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+# compiled output
+/dist
+/tmp
+build
+out
+
+# IDEs and editors
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+target/*

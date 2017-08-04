@@ -10,5 +10,5 @@ interface ExecutionContextAware {
      *
      * @param executionContext
      */
-    void setExecutionContext(Map executionContext)
+    void setExecutionContext(ExecutionContext executionContext)
 }

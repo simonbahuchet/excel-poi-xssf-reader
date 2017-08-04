@@ -1,5 +1,6 @@
 package org.sba.excel.poi.reader
 
+import org.sba.excel.poi.reader.callback.DefaultExcelSheetCallback
 import org.sba.excel.poi.reader.callback.ExcelSheetSkippedCallback
 import groovy.util.logging.Slf4j
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException
@@ -37,7 +38,7 @@ class ExcelReader {
     private static final int READ_ALL = -1
 
     // Context used to share objects between reader, handler and callbacks
-    Map executionContext = [:]
+    ExecutionContext executionContext = new ExecutionContext()
 
     OPCPackage xlsxPackage
     SheetContentsHandler sheetContentsHandler
@@ -57,7 +58,7 @@ class ExcelReader {
     /**
      * Constructor: Microsoft Excel File (XSLX) Reader
      *
-     * @param pkg a {@link OPCPackage} object - The package to process XLSX
+     * @param pkg a {@link OPCPackage} object - The package to run XLSX
      * @param sheetContentsHandler a {@link SheetContentsHandler} object - WorkSheet contents handler
      */
     ExcelReader(OPCPackage pkg, SheetContentsHandler sheetContentsHandler) {
@@ -90,8 +91,8 @@ class ExcelReader {
      *
      * @throws Exception
      */
-    void process(Map params) throws Exception {
-        executionContext += params
+    void run(Map params) throws Exception {
+        executionContext.add(params)
         read(READ_ALL)
     }
 
@@ -101,8 +102,8 @@ class ExcelReader {
      * @param sheetNumber a int object
      * @throws Exception
      */
-    void process(int sheetNumber, Map params) throws Exception {
-        executionContext += params
+    void run(int sheetNumber, Map params) throws Exception {
+        executionContext.add(params)
         read(sheetNumber)
     }
 

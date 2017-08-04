@@ -43,7 +43,7 @@ class ExcelReaderSpec extends Specification {
         reader.sheetsToSkip = ["Lot 1 Data", "Lot 3 Data"]
 
         when:
-        reader.process([:])
+        reader.run([:])
 
         then:
         readCallback.numberOfStarts == 1

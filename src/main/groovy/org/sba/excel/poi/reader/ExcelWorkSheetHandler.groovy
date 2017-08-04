@@ -56,7 +56,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     LinkedHashMap<String, String> columnHeaders
 
     // Context holding the objects shared between reader, handler and callbacks
-    Map executionContext
+    ExecutionContext executionContext
 
     /**
      * Default constructor
@@ -67,7 +67,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     }
 
     @Override
-    void setExecutionContext(Map executionContext) {
+    void setExecutionContext(ExecutionContext executionContext) {
         this.executionContext = executionContext
 
         // Set the context of its "child objects"

@@ -6,8 +6,9 @@ buildscript {
 
 apply plugin: 'maven'
 apply plugin: 'groovy'
+apply plugin: 'maven-publish'
 
-version = '0.0.1-SNAPSHOT'
+version = '0.0.2-SNAPSHOT'
 group = 'org.sba.excel'
 
 jar {
@@ -31,5 +32,13 @@ dependencies {
     compile "org.apache.poi:poi-ooxml:${apachepoi_version}"
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.4'
-
 }
+
+
+task sourcesJar(type:Jar, dependsOn: classes){
+    from sourceSets.main.allSource
+    classifier = 'sources'
+    archivesBaseName = 'poi-xssf-reader'
+}
+
+build.finalizedBy sourcesJar

@@ -68,9 +68,11 @@ class ExecutionContext {
      * Sdt the chunkItems being read
      * @param items
      */
-    void addChunkItem(Object item) {
+    void addChunkItem(Object item, Boolean incIteration = Boolean.TRUE) {
         chunkItems << item
-        incIteration()
+        if (!incIteration || incIteration.booleanValue()) {
+            this.incIteration()
+        }
     }
 
     /**

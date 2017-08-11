@@ -3,18 +3,18 @@ package org.sba.excel.poi.reader
 interface ExcelItemWriter<T> {
 
     /**
-     * Write the chunkItems read during the iteration
-     * @param items
-     * @param errors
-     * @return the number of insertions
+     * Get the items from the execution context (and access any other variable stored within the context) and write them
+     * @param executionContext
+     * @return
      */
-    int writeItems(List<T> items, List<ExcelFileReaderError> errors)
+    int writeItems(ExecutionContext executionContext)
 
     /**
-     * Write the last chunkItems. ie: the chunkItems that remain after all the iterations
+     * Write the last executionContext.chunkItems. ie: the chunkItems that remain after all the iterations
+     *
      * @param items
      * @param errors
      * @return the number of insertions
      */
-    int writeLastItems(List<T> items, List<ExcelFileReaderError> errors)
+    int writeLastItems(ExecutionContext executionContext)
 }

@@ -44,11 +44,8 @@ class DefaultExcelReadCallback<T> implements ExcelReadCallback, ExecutionContext
         // Load the chunkItems stored during the read run
         List<T> items = executionContext.chunkItems
 
-        // Load the errors
-        List<ExcelFileReaderError> errors = executionContext.errors
-
         if (items) {
-            writer.writeLastItems(items, errors)
+            writer.writeLastItems(executionContext)
         }
     }
 }

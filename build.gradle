@@ -8,7 +8,7 @@ apply plugin: 'maven'
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
-version = '0.2.0-SNAPSHOT'
+version = '0.2.0'
 group = 'org.sba.excel'
 
 jar {
@@ -42,3 +42,26 @@ task sourcesJar(type:Jar, dependsOn: classes){
 }
 
 build.finalizedBy sourcesJar
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'org.sba.excel'
+            artifactId 'poi-xssf-reader'
+            version '0.2.0'
+
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
+publishing.repositories {
+    maven {
+        credentials {
+            username "simon.bahuchet"
+            password "3@PuHEJ2"
+        }
+        url "https://repo.renault-digital.com/repository/srfp-releases/"
+    }
+}

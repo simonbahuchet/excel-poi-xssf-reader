@@ -87,6 +87,16 @@ class ExcelReader {
     }
 
     /**
+     * Constructor: Microsoft Excel File (XSLX) Reader
+     *
+     * @param InputStream a {@link InputStream} object - The InputStream object of XLSX file
+     * @param sheetContentsHandler a {@link SheetContentsHandler} object - WorkSheet contents handler
+     */
+    ExcelReader(InputStream inputStream, SheetContentsHandler sheetContentsHandler) throws Exception {
+        this(getOPCPackage(inputStream), sheetContentsHandler)
+    }
+
+    /**
      * Processing all the WorkSheet from XLSX Workbook.
      *
      * @throws Exception
@@ -211,5 +221,17 @@ class ExcelReader {
         }
 
         return OPCPackage.open(new FileInputStream(file))
+    }
+
+    /**
+     * Opens an OPCPackage for the fileInputStream
+     * @param FileInputStream
+     * @return OPCPackage
+     */
+    private static OPCPackage getOPCPackage(InputStream inputStream) throws Exception {
+        if (null == inputStream) {
+            throw new IllegalArgumentException("inputStream object is null")
+        }
+        return OPCPackage.open(inputStream)
     }
 }

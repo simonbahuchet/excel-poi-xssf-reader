@@ -41,7 +41,7 @@ class ExcelReader {
     ExecutionContext executionContext = new ExecutionContext()
 
     OPCPackage xlsxPackage
-    SheetContentsHandler sheetContentsHandler
+    ExcelWorkSheetHandler sheetContentsHandler
 
     // Handler called every time a sheet is opened or closed
     ExcelSheetCallback sheetCallback
@@ -61,7 +61,7 @@ class ExcelReader {
      * @param pkg a {@link OPCPackage} object - The package to run XLSX
      * @param sheetContentsHandler a {@link SheetContentsHandler} object - WorkSheet contents handler
      */
-    ExcelReader(OPCPackage pkg, SheetContentsHandler sheetContentsHandler) {
+    ExcelReader(OPCPackage pkg, ExcelWorkSheetHandler sheetContentsHandler) {
         this.xlsxPackage = pkg
         this.sheetContentsHandler = sheetContentsHandler
     }
@@ -72,7 +72,7 @@ class ExcelReader {
      * @param filePath a {@link String} object - The path of XLSX file
      * @param sheetContentsHandler a {@link SheetContentsHandler} object - WorkSheet contents handler
      */
-    ExcelReader(String filePath, SheetContentsHandler sheetContentsHandler) throws Exception {
+    ExcelReader(String filePath, ExcelWorkSheetHandler sheetContentsHandler) throws Exception {
         this(getOPCPackage(filePath), sheetContentsHandler)
     }
 
@@ -82,7 +82,7 @@ class ExcelReader {
      * @param file a {@link File} object - The File object of XLSX file
      * @param sheetContentsHandler a {@link SheetContentsHandler} object - WorkSheet contents handler
      */
-    ExcelReader(File file, SheetContentsHandler sheetContentsHandler) throws Exception {
+    ExcelReader(File file, ExcelWorkSheetHandler sheetContentsHandler) throws Exception {
         this(getOPCPackage(file), sheetContentsHandler)
     }
 
@@ -92,7 +92,7 @@ class ExcelReader {
      * @param InputStream a {@link InputStream} object - The InputStream object of XLSX file
      * @param sheetContentsHandler a {@link SheetContentsHandler} object - WorkSheet contents handler
      */
-    ExcelReader(InputStream inputStream, SheetContentsHandler sheetContentsHandler) throws Exception {
+    ExcelReader(InputStream inputStream, ExcelWorkSheetHandler sheetContentsHandler) throws Exception {
         this(getOPCPackage(inputStream), sheetContentsHandler)
     }
 

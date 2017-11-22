@@ -32,7 +32,8 @@ import org.sba.excel.poi.reader.callback.ExcelRowSkippedCallback
 @Slf4j
 class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAware {
 
-    private static final int HEADER_ROW = 0
+    // mappingMode is HEADER by default => header row is the first row by default and can be changed by client
+    int headerRow = 0
 
     // once an entire row of data has been read, pass map to this callback for processing
     private ExcelRowContentCallback rowCallback
@@ -54,6 +55,10 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
 
     // map of column headers => row values (eg, 'A' => 'White Shirts' )
     LinkedHashMap<String, String> columnHeaders
+
+    // true if we want to manage excel column reference (A, B, C, ...)  as column header
+    // default=false if we want to use column header name referenced by header row
+    boolean columnReferenceAsHeader = false
 
     // Context holding the objects shared between reader, handler and callbacks
     ExecutionContext executionContext
@@ -86,25 +91,14 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
 
         this.currentRow = rowNum
 
-        if (shouldSkipRow()) {
+        if (shouldSkipRow() && currentRow != headerRow) {
             return
         }
 
         if (considerHeaders()) {
             this.columnHeaders = new LinkedHashMap<String, String>()
-
         } else {
             this.currentRowMap = new LinkedHashMap<String, String>()
-
-            // Add column header as key into current row map so that each entry
-            // will exist. This ensures each column header will be in the "currentRowMap"
-            // when passed to the user callback. Remember, the 'column headers map key' is the actual cell
-            // column reference, it's value is the file column header value.
-            // In the 'cell' method below, this empty string will be overwritten
-            // with the file row value (if has one, else remains empty).
-            for (String columnHeader : this.columnHeaders.values()) {
-                this.currentRowMap.put(columnHeader, "")
-            }
         }
     }
 
@@ -115,7 +109,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     @Override
     void cell(String cellReference, String formattedValue, XSSFComment comment) {
 
-        if (shouldSkipRow()) {
+        if (shouldSkipRow() && currentRow != headerRow) {
             return
         }
 
@@ -127,12 +121,11 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
 
         if (considerHeaders()) {
             this.columnHeaders.put(getColumnReference(cellReference), formattedValue)
-
         } else {
             String columnReference = getColumnReference(cellReference)
-            String columnHeader = this.columnHeaders.get(columnReference)
-            if (columnHeader) {
-                this.currentRowMap.put(columnHeader, formattedValue)
+            String columnName = columnReferenceAsHeader ? columnReference :  this.columnHeaders.get(columnReference)
+            if (columnName) {
+                this.currentRowMap.put(columnName, formattedValue)
             } else {
                 //log.debug "Ignore cell [$cellReference:$formattedValue] because the column $columnReference is not mapped"
             }
@@ -144,7 +137,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
      */
     @Override
     void endRow(int rowNum) {
-        if (!shouldSkipRow() && rowNum <= HEADER_ROW) {
+        if (!shouldSkipRow() && rowNum <= headerRow) {
             //This is not yet the end, my friend
             return
         }
@@ -210,12 +203,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
      * @return true if we must consider the column values, of the current row, as headers
      */
     boolean considerHeaders() {
-        boolean headerMode = this.mappingMode == ColumnMapping.HEADER && HEADER_ROW == this.currentRow
-        if (headerMode && !this.columnHeaders) {
-            throw new IllegalStateException("Cannot read any row without any mapping (ie. column names). Please " +
-                    "switch to the HEADER mode or set a ColumnHeaders map")
-        }
-        return headerMode
+        return this.mappingMode == ColumnMapping.HEADER && headerRow == this.currentRow
     }
 
     /**
@@ -225,5 +213,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     void setColumnHeaders(LinkedHashMap<String, String> columnHeaders) {
         mappingMode = ColumnMapping.MANUAL
         this.columnHeaders = columnHeaders
+        // if manual mode -> no header row
+        headerRow=-1
     }
 }

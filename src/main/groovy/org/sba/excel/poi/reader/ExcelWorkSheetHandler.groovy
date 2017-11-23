@@ -6,6 +6,9 @@ import org.apache.poi.xssf.usermodel.XSSFComment
 import org.sba.excel.poi.reader.callback.ExcelRowContentCallback
 import org.sba.excel.poi.reader.callback.ExcelRowSkippedCallback
 
+import static org.sba.excel.poi.reader.ExcelWorkSheetHandler.ColumnMapping.HEADER_ROW_ONLY
+import static org.sba.excel.poi.reader.ExcelWorkSheetHandler.ColumnMapping.REFERENCE_AND_HEADER_ROW
+
 /**
  * <p>
  * Excel Worksheet Handler for XML SAX parsing (.xlsx document model) <a
@@ -51,14 +54,10 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     ExcelRowSkippedCallback rowSkippedCallback
 
     // Way to identify the keys for the row mapping -> are they identified from within a header row? or manually set
-    ColumnMapping mappingMode = ColumnMapping.HEADER
+    ColumnMapping mappingMode = HEADER_ROW_ONLY
 
     // map of column headers => row values (eg, 'A' => 'White Shirts' )
     LinkedHashMap<String, String> columnHeaders
-
-    // true if we want to manage excel column reference (A, B, C, ...)  as column header
-    // default=false if we want to use column header name referenced by header row
-    boolean columnReferenceAsHeader = false
 
     // Context holding the objects shared between reader, handler and callbacks
     ExecutionContext executionContext
@@ -109,7 +108,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     @Override
     void cell(String cellReference, String formattedValue, XSSFComment comment) {
 
-        if (shouldSkipRow() && currentRow != headerRow) {
+        if (shouldSkipRow()) {
             return
         }
 
@@ -123,7 +122,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
             this.columnHeaders.put(getColumnReference(cellReference), formattedValue)
         } else {
             String columnReference = getColumnReference(cellReference)
-            String columnName = columnReferenceAsHeader ? columnReference :  this.columnHeaders.get(columnReference)
+            String columnName = (mappingMode == REFERENCE_AND_HEADER_ROW) ? columnReference :  this.columnHeaders.get(columnReference)
             if (columnName) {
                 this.currentRowMap.put(columnName, formattedValue)
             } else {
@@ -137,32 +136,35 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
      */
     @Override
     void endRow(int rowNum) {
-        if (!shouldSkipRow() && rowNum <= headerRow) {
-            //This is not yet the end, my friend
-            return
-        }
+        // if is row to skip
+        if (shouldSkipRow()) {
+            // The row has been skipped, call the appropriate callback
+            if (this.rowSkippedCallback) {
+                try {
+                    log.debug "Row $rowNum has been skipped, call the rowSkippedCallback"
 
-        // The row has NOT been skipped, call the appropriate callback
-        if (!shouldSkipRow()) {
-            try {
-                //log.debug "Row has been read. rowNum=$rowNum, map=$currentRowMap. Let's call the rowCallback"
-                this.rowCallback.processRow(rowNum, currentRowMap)
-            } catch (Exception e) {
-                throw new RuntimeException("Error invoking callback", e)
+                    this.rowSkippedCallback.skip(rowNum)
+                } catch (Exception e) {
+                    throw new RuntimeException("Error invoking callback", e)
+                }
             }
             return
         }
 
-        // The row has been skipped, call the appropriate callback
-        if (this.rowSkippedCallback) {
-            try {
-                log.debug "Row $rowNum has been skipped, call the rowSkippedCallback"
-
-                this.rowSkippedCallback.skip(rowNum)
-            } catch (Exception e) {
-                throw new RuntimeException("Error invoking callback", e)
-            }
+        // if is header row
+        if (mappingMode in [HEADER_ROW_ONLY, REFERENCE_AND_HEADER_ROW] && rowNum == headerRow) {
+            // skip header row
+            return
         }
+
+        // otherwise, we have to process this row normally (call the appropriate callback)
+        try {
+            //log.debug "Row has been read. rowNum=$rowNum, map=$currentRowMap. Let's call the rowCallback"
+            this.rowCallback.processRow(rowNum, currentRowMap)
+        } catch (Exception e) {
+            throw new RuntimeException("Error invoking callback", e)
+        }
+
     }
 
     /**
@@ -195,15 +197,20 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
     }
 
     enum ColumnMapping {
-        MANUAL,
-        HEADER
+        // CONFIGURED if we want to specify column header name manually
+        CONFIGURED,
+        // HEADER_ROW_ONLY if we only want to use column header name referenced by header row
+        HEADER_ROW_ONLY,
+        // REFERENCE_AND_HEADER_ROW if we want to manage excel column reference (A, B, C, ...) as column header
+        // and also header row referenced by excel column reference
+        REFERENCE_AND_HEADER_ROW
     }
 
     /**
      * @return true if we must consider the column values, of the current row, as headers
      */
     boolean considerHeaders() {
-        return this.mappingMode == ColumnMapping.HEADER && headerRow == this.currentRow
+        return this.mappingMode in [HEADER_ROW_ONLY, REFERENCE_AND_HEADER_ROW] && headerRow == this.currentRow
     }
 
     /**
@@ -211,9 +218,7 @@ class ExcelWorkSheetHandler implements SheetContentsHandler, ExecutionContextAwa
      * @param columnHeaders
      */
     void setColumnHeaders(LinkedHashMap<String, String> columnHeaders) {
-        mappingMode = ColumnMapping.MANUAL
+        mappingMode = ColumnMapping.CONFIGURED
         this.columnHeaders = columnHeaders
-        // if manual mode -> no header row
-        headerRow=-1
     }
 }

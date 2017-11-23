@@ -6,7 +6,7 @@ import spock.lang.Specification
 @Slf4j
 class ExcelReaderSpec extends Specification {
 
-    void "Read a sample file should call the handlers with custom column headers"() {
+    void "Read a sample file should call the handlers with configured column headers"() {
 
         given:
         File file = new File("build/resources/test/file/Sample-Person-Data.xlsx")
@@ -68,7 +68,7 @@ class ExcelReaderSpec extends Specification {
         rowContentCallback.rowMaps[2]
     }
 
-    void "Read a sample fileInputStream should call the handlers with custom column headers"() {
+    void "Read a sample fileInputStream should call the handlers with configured column headers"() {
 
         given:
 
@@ -205,10 +205,10 @@ class ExcelReaderSpec extends Specification {
         workSheetHandler.rowSkippedCallback = rowskippedCallback
         // We consider all columns in header mode
 
-        workSheetHandler.columnReferenceAsHeader=true
+        workSheetHandler.mappingMode = ExcelWorkSheetHandler.ColumnMapping.REFERENCE_AND_HEADER_ROW
 
         // We skip the header row cause we are in column reference mode
-        workSheetHandler.rowsToSkip = [0]
+        workSheetHandler.rowsToSkip = []
 
         ExcelReader reader = new ExcelReader(file, workSheetHandler)
         reader.sheetCallback = sheetCallback
@@ -228,7 +228,7 @@ class ExcelReaderSpec extends Specification {
         sheetCallback.numberOfEnds == 1
         sheetSkippedCallback.numberOfCalls == 3
         rowContentCallback.numberOfCalls == 2
-        rowskippedCallback.numberOfCalls == 1
+        rowskippedCallback.numberOfCalls == 0
 
         rowContentCallback.rowMaps.size() == 2
 
@@ -268,7 +268,7 @@ class ExcelReaderSpec extends Specification {
         workSheetHandler.rowSkippedCallback = rowskippedCallback
         // We consider all columns in header mode
 
-        workSheetHandler.columnReferenceAsHeader=true
+        workSheetHandler.mappingMode = ExcelWorkSheetHandler.ColumnMapping.REFERENCE_AND_HEADER_ROW
 
         // We skip 2 first rows
         workSheetHandler.rowsToSkip = [0,1]
@@ -345,7 +345,7 @@ class ExcelReaderSpec extends Specification {
         workSheetHandler.rowSkippedCallback = rowskippedCallback
         // We consider all columns in header mode
 
-        workSheetHandler.columnReferenceAsHeader=true
+        workSheetHandler.mappingMode = ExcelWorkSheetHandler.ColumnMapping.REFERENCE_AND_HEADER_ROW
 
         // We skip first row
         workSheetHandler.rowsToSkip = [0]
